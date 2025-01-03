@@ -2,49 +2,50 @@
 
 //> using resourceDir data
 
-//> using dep io.github.quafadas::scautable::0.0.11-23-3f71ff-DIRTY144c070
+//> using dep io.github.quafadas::scautable::0.0.11-25-eb75f9-DIRTY3b215dc3
 
 //> using options -experimental -language:experimental.namedTuples
 
 import io.github.quafadas.scautable.scautable.*
+import io.github.quafadas.scautable.scautable
 import io.github.quafadas.scautable.CSV
 import io.github.quafadas.scautable.CSV.*
 import NamedTuple.*
 
-enum Gender:
+enum Gender :
   case Male, Female
 
 @main def titanic =
 
   def csv = CSV.resource("titanic.csv")
 
+  println(csv.headers.mkString(", "))
+
   def data = csv
     .mapColumn["Sex", Gender]((x: String) => Gender.valueOf(x.capitalize))
     .dropColumn["PassengerId"]
-
-  val survived = data
-    .column["Survived"]
-    .toArray
-    .groupMapReduce(identity)(_ => 1)(_ + _)
-
-  val sex = data
-    .column["Sex"]
-    .toArray
-    .groupMapReduce(identity)(_ => 1)(_ + _)
-    .toList
-
-  val age = csv
     .mapColumn["Age", Option[Double]](_.toDoubleOption)
-    .column["Age"]
-    .toArray
-    .groupMapReduce(identity)(_ => 1)(_ + _)
-    .toList
+    .mapColumn["Survived", Boolean](_ == "1")
+
+
+  def survivedCol = data.column["Survived"]
+  def surived= survivedCol.foldLeft((0, 0, 0.0)){case (acc, survived) =>
+    val survivedI = if survived then 1 else 0
+    (acc._1 + survivedI, acc._2 + 1, 100 * acc._1.toDouble / acc._2.toDouble)
+  }.withNames[("Survived", "Total", "%")]
+
+  val dataArr = data.toArray
+  println(data.toArray.take(20).consoleFormatNt)
+  // scautable.desktopShowNt(dataArr) // Will pop up a browser window with the data
+
+  val sex: List[(Gender, Int)] = dataArr.map(_.Sex).groupMapReduce(identity)(_ => 1)(_ + _).toList
+
+  val age = dataArr.map(_.Age).groupMapReduce(identity)(_ => 1)(_ + _).toList
 
   val group =
-    csv.toArray
+    dataArr
       .map(x => (x.Survived, x.Sex).withNames[("Survived", "Sex")])
-      .toArray
-      .groupMapReduce(_.Sex)(x => (x.Survived.toInt, 1, 0.0)) {
+      .groupMapReduce(_.Sex)(x => (if(x.Survived) 1 else 0, 1, 0.0)) {
         case ((surviveAcc, oneAcc, percAcc), (c, d, e)) =>
           (
             surviveAcc + c,
@@ -57,11 +58,11 @@ enum Gender:
         (x, a, b, c).withNames[("Sex", "Survived", "CohortCount", "%")]
       }
 
-  println(data.toArray.take(20).consolePrint())
+  println("Surived: ")
+  println(List(surived).consoleFormatNt)
 
-  println(
-    s"survived $survived : % of total ${survived.get("1").sum.toDouble / csv.size.toDouble}"
-  )
-  println(sex.consoleShow)
+  println("Gender Info")
+  println(sex.consoleFormat)
 
-  println(group.consolePrint())
+  println("Survived By Gender")
+  println(group.consoleFormatNt())
