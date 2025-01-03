@@ -2,7 +2,7 @@
 
 //> using resourceDir data
 
-//> using dep io.github.quafadas::scautable::0.0.11-25-eb75f9-DIRTY3b215dc3
+//> using dep io.github.quafadas::scautable:0.0.11-25-eb75f9-DIRTY3b215dc3
 
 //> using options -experimental -language:experimental.namedTuples
 
@@ -18,6 +18,7 @@ enum Gender :
 @main def titanic =
 
   def csv = CSV.resource("titanic.csv")
+  val i = csv.take(1)
 
   println(csv.headers.mkString(", "))
 
