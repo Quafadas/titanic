@@ -1,15 +1,12 @@
-//> using scala 3.6.2
+//> using scala 3.6.3-RC1
 
 //> using resourceDir data
 
-//> using dep io.github.quafadas::scautable:0.0.11-25-eb75f9-DIRTY3b215dc3
+//> using dep io.github.quafadas::scautable:0.0.14
 
 //> using options -experimental -language:experimental.namedTuples
 
-import io.github.quafadas.scautable.scautable.*
-import io.github.quafadas.scautable.scautable
-import io.github.quafadas.scautable.CSV
-import io.github.quafadas.scautable.CSV.*
+import io.github.quafadas.table.*
 import NamedTuple.*
 
 enum Gender :
