@@ -2,7 +2,7 @@
 
 //> using resourceDir data
 
-//> using dep io.github.quafadas::scautable:0.0.14
+//> using dep io.github.quafadas::scautable:0.0.14-3-3ca125
 
 //> using options -experimental -language:experimental.namedTuples
 
@@ -18,6 +18,8 @@ enum Gender :
   val i = csv.take(1)
 
   println(csv.headers.mkString(", "))
+
+  csv.showTypeTest()
 
   def data = csv
     .mapColumn["Sex", Gender]((x: String) => Gender.valueOf(x.capitalize))
